@@ -34,17 +34,17 @@ set(CRTN_OBJ ${CMAKE_CURRENT_BINARY_DIR}/crtn.o)
 # Assemble crti.o using yasm.
 add_custom_command(
     OUTPUT ${CRTI_OBJ}
-    COMMAND yasm -f elf64 ${CRTI_SRC} -o ${CRTI_OBJ}
+    COMMAND nasm -f elf64 ${CRTI_SRC} -o ${CRTI_OBJ}
     DEPENDS ${CRTI_SRC}
-    COMMENT "Assembling crti.o with yasm"
+    COMMENT "Assembling crti.o with nasm"
 )
 
 # Assemble crtn.o using yasm.
 add_custom_command(
     OUTPUT ${CRTN_OBJ}
-    COMMAND yasm -f elf64 ${CRTN_SRC} -o ${CRTN_OBJ}
+    COMMAND nasm -f elf64 ${CRTN_SRC} -o ${CRTN_OBJ}
     DEPENDS ${CRTN_SRC}
-    COMMENT "Assembling crtn.o with yasm"
+    COMMENT "Assembling crtn.o with nasm"
 )
 
 # Create a target to ensure these objects are built before linking.
