@@ -119,6 +119,8 @@ set(CMAKE_NM "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-nm")
 set(CMAKE_OBJCOPY "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-objcopy")
 set(CMAKE_OBJDUMP "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-objdump")
 
+message(STARUS ${CMAKE_LINKER})
+
 add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 add_subdirectory(${CMAKE_SOURCE_DIR}/image)
 
