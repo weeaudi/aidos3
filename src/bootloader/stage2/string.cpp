@@ -11,6 +11,7 @@ bool strcmp(const char* str1, const char* str2)
     return (uint8_t)*str1 - (uint8_t)*str2;
 }
 
+__attribute__((noinline))
 uint8_t strlen(const char* str)
 {
     uint8_t len = 0;
