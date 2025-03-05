@@ -21,7 +21,7 @@ void* memcpy(void* dst, const void* src, uint16_t size)
     return dst;
 }
 
-__attribute__((noinline))
+__attribute__((noinline, optimize("O0")))
 void* memset(void* dst, uint8_t val, uint16_t size)
 {
     uint8_t* u8Dst = (uint8_t *)dst;
