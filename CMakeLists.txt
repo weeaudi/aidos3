@@ -93,7 +93,6 @@ ExternalProject_Add(
   URL ${BINUTILS_URL}
   URL_MD5 9ef8d27543a854eaecc8ceeadc100697
   PREFIX "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}"
-  DOWNLOAD_EXTRACT_TIMESTAMP true
   CONFIGURE_COMMAND <SOURCE_DIR>/configure --target=${TARGET} --prefix=${CMAKE_SOURCE_DIR}/${PREFIX_DIR} --with-sysroot= --disable-nls --disable-werror
   BUILD_COMMAND make -j16
   INSTALL_COMMAND make install
@@ -105,7 +104,6 @@ ExternalProject_Add(
   URL ${GCC_URL}
   URL_MD5 aeb5ac806c34d47e725bdd025f34bac4
   PREFIX "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}"
-  DOWNLOAD_EXTRACT_TIMESTAMP true
   CONFIGURE_COMMAND <SOURCE_DIR>/configure --target=${TARGET} --prefix=${CMAKE_SOURCE_DIR}/${PREFIX_DIR} --disable-nls --enable-languages=c,c++ --without-headers
   BUILD_COMMAND make -j16 all-gcc all-target-libgcc
   INSTALL_COMMAND make install-gcc install-target-libgcc
