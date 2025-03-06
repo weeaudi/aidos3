@@ -130,7 +130,7 @@ macro(AddIfMissing NAME URL PREFIX)
         set(${NAME}_PREFIX ${PREFIX})
     else()
         message(STATUS "${NAME} found in system path: ${${NAME}_INCLUDE_DIR}")
-        set(${NAME}_PREFIX "")
+        set(${NAME}_PREFIX ${${NAME}_INCLUDE_DIR})
     endif()
 endmacro()
 
