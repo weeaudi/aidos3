@@ -1,5 +1,7 @@
 Small os project.
 
+[![Build](https://github.com/weeaudi/aidos3/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/weeaudi/aidos3/actions/workflows/cmake-multi-platform.yml)
+
 setup
 
 run apt_installer.sh as root to install dependancies (ubuntu) or find packages in file and manually install them (other os'es)

@@ -27,6 +27,11 @@ if(NOT KCONFIG_MCONF_EXECUTABLE)
   set(TARGET x86_64-elf)
   set(PREFIX_DIR "Tools/${TARGET}")
 
+  set(LOCAL_DEPS_DIR "${CMAKE_BINARY_DIR}/deps")
+  set(GMP_PREFIX "${LOCAL_DEPS_DIR}/gmp")
+  set(MPC_PREFIX "${LOCAL_DEPS_DIR}/mpc")
+  set(MPFR_PREFIX "${LOCAL_DEPS_DIR}/mpfr")
+
   set(VERSION_NUMBER 0.0.3)
 
 else()
@@ -69,6 +74,11 @@ else()
     set(TARGET x86_64-elf)
     set(PREFIX_DIR "Tools/${TARGET}")
 
+    set(LOCAL_DEPS_DIR "${CMAKE_BINARY_DIR}/deps")
+    set(GMP_PREFIX "${LOCAL_DEPS_DIR}/gmp")
+    set(MPC_PREFIX "${LOCAL_DEPS_DIR}/mpc")
+    set(MPFR_PREFIX "${LOCAL_DEPS_DIR}/mpfr")
+
     set(VERSION_NUMBER 0.0.3)
   endif()
 
@@ -80,6 +90,72 @@ project(aidos3 VERSION ${VERSION_NUMBER})
 string(REPLACE "@GCC_VERSION@" "${GCC_VERSION}" GCC_URL "${GCC_URL}")
 string(REPLACE "@BINUTILS_VERSION@" "${BINUTILS_VERSION}" BINUTILS_URL "${BINUTILS_URL}")
 string(REPLACE "@TARGET@" "${TARGET}" PREFIX_DIR "${PREFIX_DIR}")
+
+#----------------------------------------------------------------------------
+# Check for required dependencies
+#----------------------------------------------------------------------------
+
+# Detect system paths for Windows and Unix-like OSes
+if (WIN32)
+    set(SYSTEM_INCLUDE_PATHS "C:/msys64/mingw64/include" "C:/mingw-w64/include" "C:/local/include" $ENV{INCLUDE})
+    set(SYSTEM_LIBRARY_PATHS "C:/msys64/mingw64/lib" "C:/mingw-w64/lib" "C:/local/lib" $ENV{LIB})
+else()
+    set(SYSTEM_INCLUDE_PATHS "/usr/include" "/usr/local/include" $ENV{CPATH})
+    set(SYSTEM_LIBRARY_PATHS "/usr/lib" "/usr/local/lib" $ENV{LIBRARY_PATH})
+endif()
+
+# Check for GMP, MPFR, MPC in system paths
+find_path(GMP_INCLUDE_DIR gmp.h PATHS ${SYSTEM_INCLUDE_PATHS})
+find_library(GMP_LIBRARY gmp PATHS ${SYSTEM_LIBRARY_PATHS})
+
+find_path(MPFR_INCLUDE_DIR mpfr.h PATHS ${SYSTEM_INCLUDE_PATHS})
+find_library(MPFR_LIBRARY mpfr PATHS ${SYSTEM_LIBRARY_PATHS})
+
+find_path(MPC_INCLUDE_DIR mpc.h PATHS ${SYSTEM_INCLUDE_PATHS})
+find_library(MPC_LIBRARY mpc PATHS ${SYSTEM_LIBRARY_PATHS})
+
+# Macro to add an external project if missing
+macro(AddIfMissing NAME URL PREFIX)
+    if (NOT EXISTS ${${NAME}_INCLUDE_DIR} OR NOT EXISTS ${${NAME}_LIBRARY})
+        ExternalProject_Add(
+            ${NAME}
+            URL ${URL}
+            PREFIX ${PREFIX}
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${PREFIX} ${ARGN}
+            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j16
+            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
+            DOWNLOAD_EXTRACT_TIMESTAMP true
+        )
+        message(STATUS "${NAME} not found. Building from source.")
+        set(${NAME}_PREFIX ${PREFIX})
+    else()
+        message(STATUS "${NAME} found in system path: ${${NAME}_INCLUDE_DIR}")
+        set(${NAME}_PREFIX "")
+    endif()
+endmacro()
+
+# Download and build dependencies only if missing
+AddIfMissing(GMP  "https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz"  ${GMP_PREFIX})
+AddIfMissing(MPFR "https://ftp.gnu.org/gnu/mpfr/mpfr-4.1.0.tar.xz" ${MPFR_PREFIX} --with-gmp=${GMP_PREFIX})
+AddIfMissing(MPC  "https://ftp.gnu.org/gnu/mpc/mpc-1.2.1.tar.gz"  ${MPC_PREFIX}  --with-gmp=${GMP_PREFIX} --with-mpfr=${MPFR_PREFIX})
+
+# Set paths for GCC
+set(GMP_PATH ${GMP_PREFIX})
+set(MPFR_PATH ${MPFR_PREFIX})
+set(MPC_PATH ${MPC_PREFIX})
+
+# If system versions exist, use them instead of the local ones
+if (GMP_LIBRARY AND GMP_INCLUDE_DIR)
+    set(GMP_PATH "")
+endif()
+
+if (MPFR_LIBRARY AND MPFR_INCLUDE_DIR)
+    set(MPFR_PATH "")
+endif()
+
+if (MPC_LIBRARY AND MPC_INCLUDE_DIR)
+    set(MPC_PATH "")
+endif()
 
 #----------------------------------------------------------------------------
 # Add external projects for build tools
@@ -96,6 +172,7 @@ ExternalProject_Add(
   CONFIGURE_COMMAND <SOURCE_DIR>/configure --target=${TARGET} --prefix=${CMAKE_SOURCE_DIR}/${PREFIX_DIR} --with-sysroot= --disable-nls --disable-werror
   BUILD_COMMAND make -j16
   INSTALL_COMMAND make install
+  DOWNLOAD_EXTRACT_TIMESTAMP true
 )
 
 ExternalProject_Add(
@@ -104,9 +181,10 @@ ExternalProject_Add(
   URL ${GCC_URL}
   URL_MD5 aeb5ac806c34d47e725bdd025f34bac4
   PREFIX "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}"
-  CONFIGURE_COMMAND <SOURCE_DIR>/configure --target=${TARGET} --prefix=${CMAKE_SOURCE_DIR}/${PREFIX_DIR} --disable-nls --enable-languages=c,c++ --without-headers
+  CONFIGURE_COMMAND <SOURCE_DIR>/configure --target=${TARGET} --prefix=${CMAKE_SOURCE_DIR}/${PREFIX_DIR} --disable-nls --enable-languages=c,c++ --without-headers --with-gmp=${GMP_PATH} --with-mpfr=${MPFR_PATH} --with-mpc=${MPC_PATH}
   BUILD_COMMAND make -j16 all-gcc all-target-libgcc
   INSTALL_COMMAND make install-gcc install-target-libgcc
+  DOWNLOAD_EXTRACT_TIMESTAMP true
 )
 
 set(CMAKE_C_COMPILER "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-gcc")
