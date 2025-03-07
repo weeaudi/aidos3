@@ -63,7 +63,7 @@ jobs:
       run: ${{ github.workspace }}\windows_install.ps1
 
     - name: Reload Environment
-      if: runner.os == 'Windows'
+      if: runner.os == 'Windows
       run: |
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
       shell: powershell
