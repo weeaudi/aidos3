@@ -1,5 +1,11 @@
 setlocal
 
+:: Function to check if a command exists
+where %1 >nul 2>nul
+if %errorlevel% neq 0 (
+    exit /b 1
+)
+
 :: Check for winget
 where winget >nul 2>nul
 if %errorlevel% == 0 (
