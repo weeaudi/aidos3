@@ -1,3 +1,4 @@
+@echo off
 setlocal
 
 :: Function to check if a command exists
