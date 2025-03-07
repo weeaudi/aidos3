@@ -117,7 +117,6 @@ find_library(MPC_LIBRARY mpc PATHS ${SYSTEM_LIBRARY_PATHS})
 # Macro to add an external project if missing
 macro(AddIfMissing NAME URL PREFIX)
     if (NOT EXISTS ${${NAME}_INCLUDE_DIR} OR NOT EXISTS ${${NAME}_LIBRARY})
-      if(NOT WIN32)
         ExternalProject_Add(
             ${NAME}
             URL ${URL}
@@ -129,9 +128,6 @@ macro(AddIfMissing NAME URL PREFIX)
         )
         message(STATUS "${NAME} not found. Building from source.")
         set(${NAME}_PREFIX ${PREFIX})
-      else()
-        message(WARNING SKIPPING ${NAME})
-      end()
     else()
         message(STATUS "${NAME} found in system path: ${${NAME}_INCLUDE_DIR}")
         set(${NAME}_PREFIX ${${NAME}_INCLUDE_DIR})
@@ -168,7 +164,6 @@ endif()
 message(STATUS ${PREFIX_DIR})
 message(STATUS ${CMAKE_SOURCE_DIR})
 message(STATUS ${CMAKE_SOURCE_DIR}/${PREFIX_DIR})
-if(NOT WIN32)
 ExternalProject_Add(
   binutils
   URL ${BINUTILS_URL}
@@ -191,37 +186,18 @@ ExternalProject_Add(
   INSTALL_COMMAND make install-gcc install-target-libgcc
   DOWNLOAD_EXTRACT_TIMESTAMP true
 )
-else()
-  MESSAGE(WARNING GCC AND BINUTILS MUST BE INSTALLED MANNUALLY)
-endif()
 
-if(NOT WIN32)
-  set(CMAKE_C_COMPILER "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-gcc")
-  set(CMAKE_CXX_COMPILER "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-g++")
-  set(CMAKE_ASM_NASM_FLAGS "-f elf64 -g")
-  set(CMAKE_ASM_NASM_COMPILE_OBJECT "<CMAKE_ASM_NASM_COMPILER> <DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> <SOURCE>")
-  set(CMAKE_LINKER "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-g++")
-  set(CMAKE_AR "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-ar")
-  set(CMAKE_NM "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-nm")
-  set(CMAKE_OBJCOPY "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-objcopy")
-  set(CMAKE_OBJDUMP "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-objdump")
-else()
-  find_program(GCC_EXECUTABLE gcc)
-  if(NOT GCC_EXECUTABLE)
-    message(FATAL_ERROR "GCC is not installed. Please install GCC.")
-  endif()
-  set(CMAKE_C_COMPILER GCC_EXECUTABLE)
-  
-  find_program(GXX_EXECUTABLE g++)
-  if(NOT GXX_EXECUTABLE)
-    message(FATAL_ERROR "G++ is not installed. Please install G++.")
-  endif()
-  set(CMAKE_CXX_COMPILER GPP_EXECUTABLE)
-  
-  set(CMAKE_ASM_NASM_FLAGS "-f elf64 -g")
-  set(CMAKE_ASM_NASM_COMPILE_OBJECT "<CMAKE_ASM_NASM_COMPILER> <DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> <SOURCE>")
-  
-endif()
+set(CMAKE_C_COMPILER "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-gcc")
+set(CMAKE_CXX_COMPILER "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-g++")
+set(CMAKE_ASM_NASM_FLAGS "-f elf64 -g")
+set(CMAKE_ASM_NASM_COMPILE_OBJECT "<CMAKE_ASM_NASM_COMPILER> <DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> <SOURCE>")
+set(CMAKE_LINKER "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-g++")
+set(CMAKE_AR "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-ar")
+set(CMAKE_NM "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-nm")
+set(CMAKE_OBJCOPY "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-objcopy")
+set(CMAKE_OBJDUMP "${CMAKE_SOURCE_DIR}/${PREFIX_DIR}/bin/${TARGET}-objdump")
+
+message(STARUS ${CMAKE_LINKER})
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 add_subdirectory(${CMAKE_SOURCE_DIR}/image)
