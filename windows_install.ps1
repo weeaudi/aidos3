@@ -53,7 +53,6 @@ else {
         "python" = "python"
         "qemu"   = "qemu"
         "doxygen"= "doxygen.install"
-        "gcc"    = "mingw --version=13.2.0"
     }
 
     foreach ($cmd in $packages.Keys) {
