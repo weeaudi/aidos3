@@ -1,45 +1,24 @@
 # Enable error handling
 $ErrorActionPreference = "Stop"
 
-# Function to check if a command exists in PATH
-function Test-CommandExists {
-    param (
-        [string]$Command
-    )
-    return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
-}
-
 # Check for winget
-if (Test-CommandExists "winget") {
+if (Get-Command winget -ErrorAction SilentlyContinue) {
     Write-Output "Using winget for installation."
-
-    $packages = @{
-        "nasm"   = "NASM.NASM"
-        "python" = "Python.Python.3.11"
-        "qemu"   = "SoftwareFreedomConservancy.QEMU"
-        "doxygen"= "DimitriVanHeesch.Doxygen"
-    }
-
-    foreach ($cmd in $packages.Keys) {
-        if (-not (Test-CommandExists $cmd)) {
-            Write-Output "Installing $cmd..."
-            winget install --silent --accept-source-agreements --accept-package-agreements $packages[$cmd]
-        }
-        else {
-            Write-Output "$cmd is already installed and available in PATH."
-        }
-    }
+    winget install --silent --accept-source-agreements --accept-package-agreements NASM.NASM
+    winget install --silent --accept-source-agreements --accept-package-agreements Python.Python.3.11
+    winget install --silent --accept-source-agreements --accept-package-agreements SoftwareFreedomConservancy.QEMU
+    winget install --silent --accept-source-agreements --accept-package-agreements DimitriVanHeesch.Doxygen
 }
 else {
     Write-Output "winget not found. Checking for Chocolatey..."
 
-    if (-not (Test-CommandExists "choco")) {
+    if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
         Write-Output "Chocolatey not found. Installing Chocolatey..."
         Set-ExecutionPolicy Bypass -Scope Process -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
         Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-        if (-not (Test-CommandExists "choco")) {
+        if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
             Write-Output "Failed to install Chocolatey. Please install dependencies manually."
             exit 1
         }
@@ -48,31 +27,13 @@ else {
     }
 
     Write-Output "Installing dependencies using Chocolatey..."
-    $packages = @{
-        "nasm"   = "nasm"
-        "python" = "python"
-        "qemu"   = "qemu"
-        "doxygen"= "doxygen.install"
-    }
-
-    foreach ($cmd in $packages.Keys) {
-        if (-not (Test-CommandExists $cmd)) {
-            Write-Output "Installing $cmd..."
-            choco install $packages[$cmd] -y
-        }
-        else {
-            Write-Output "$cmd is already installed and available in PATH."
-        }
-    }
+    choco install nasm -y
+    choco install qemu -y
+    choco install cmake -y
+    choco install doxygen.install -y
+    choco install python -y
 }
 
-# Ensure Python is installed before proceeding with pip
-if (Test-CommandExists "python") {
-    Write-Output "Ensuring required Python packages are installed..."
-    python -m pip install --upgrade pip
-    python -m pip install sh pyelftools PyFatFS
-}
-else {
-    Write-Output "Python is not installed. Please install it manually."
-    exit 1
-}
+# Ensure Python packages are installed
+python -m pip install --upgrade pip
+python -m pip install sh pyelftools PyFatFS
