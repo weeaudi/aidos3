@@ -1,3 +1,4 @@
+# Windows installation script using winget and fallback to Chocolatey
 @echo off
 setlocal
 
