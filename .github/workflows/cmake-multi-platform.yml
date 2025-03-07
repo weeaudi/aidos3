@@ -66,6 +66,7 @@ jobs:
       if: runner.os == 'Windows'
       run: |
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+        echo "C:\Program Files\NASM" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
       shell: powershell
 
     - name: Configure CMake
